@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Admin_Report
+from .models import Report
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Admin_Report
+        model = Report
         fields = '__all__'

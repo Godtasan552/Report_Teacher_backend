@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Admin_Report
+from .models import Report
 
-@admin.register(Admin_Report)
+@admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
     list_display = ["tracking_id", "teacher", "subject", "status", "created_at"]
     list_filter = ["status", "created_at"]
