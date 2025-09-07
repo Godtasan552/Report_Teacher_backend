@@ -31,7 +31,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/admin_report/", include("users_AM.urls")),  # admin router
     path("api/users_report/", include("Admin_Report.urls")),  # search / user APIs
-    path("api/auth/", include("users_AM.urls")),
+    path("api/", include(router.urls)), 
 ]
 
 # ถ้า DEBUG=True ให้ serve media files ทำให้สามารถเข้าถึงไฟล์ที่อัพโหลดผ่าน URL ได้
