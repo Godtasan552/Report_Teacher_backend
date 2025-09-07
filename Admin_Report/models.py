@@ -20,7 +20,7 @@ class Report(models.Model):
         max_length=50, 
         choices=STATUS_CHOICES, 
         default="ReportSent")
-    respones  = models.TextField(blank=True, null=True)
+    response = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

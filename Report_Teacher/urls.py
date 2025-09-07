@@ -23,8 +23,10 @@ from users_AM import views as user_views
 router = DefaultRouter()
 router.register(r"reports", ReportViewSet, basename="report")
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include(router.urls)),
-    path("api/auth/", include(user_views.urlpatterns)),
+    path("api/admin_report/", include("users_AM.urls")),  # admin router
+    path("api/users_report/", include("Admin_Report.urls")),  # search / user APIs
+    path("api/auth/", include("users_AM.urls")),
 ]
