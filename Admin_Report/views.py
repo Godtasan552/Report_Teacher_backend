@@ -106,7 +106,6 @@ class ReportViewSet(viewsets.ModelViewSet):
 
 @api_view(["GET"])
 def search_report(request, tracking_id):
-    """ค้นหารายงานด้วย tracking_id"""
     try:
         report = Report.objects.get(tracking_id=tracking_id)
         data = {
@@ -115,6 +114,7 @@ def search_report(request, tracking_id):
             "subject": report.subject,
             "detail": report.detail,
             "status": report.status,
+            "status_display": report.get_status_display(),  # เพิ่มบรรทัดนี้
             "response": report.response,
             "created_at": report.created_at,
         }
