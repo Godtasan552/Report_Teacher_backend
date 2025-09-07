@@ -19,6 +19,9 @@ from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 from Admin_Report.views import ReportViewSet
 from users_AM import views as user_views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 router = DefaultRouter()
 router.register(r"reports", ReportViewSet, basename="report")
@@ -30,3 +33,7 @@ urlpatterns = [
     path("api/users_report/", include("Admin_Report.urls")),  # search / user APIs
     path("api/auth/", include("users_AM.urls")),
 ]
+
+# ถ้า DEBUG=True ให้ serve media files ทำให้สามารถเข้าถึงไฟล์ที่อัพโหลดผ่าน URL ได้
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
