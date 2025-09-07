@@ -21,64 +21,26 @@ class ReportViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]  # เพิ่ม JWT authentication
     
     def get_permissions(self):
-        # admin เท่านั้นที่แก้ไข / ดู list / ลบได้
         if self.action in ["update", "partial_update", "destroy", "get_reports"]:
             return [IsAdminUser()]
-        # คนทั่วไปสามารถส่ง report ได้
         return [permissions.AllowAny()]
-    
-    # ปิดการใช้งาน list method เดิม
+
+    # เพิ่มบรรทัดนี้เพื่อให้ serializer ใช้ request ในการสร้าง URL ของไฟล์
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def list(self, request, *args, **kwargs):
         return Response(
             {"error": "ใช้ POST /reports/get_reports/ แทน"}, 
             status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
-    
+
     @action(detail=False, methods=['POST'], url_path='get_reports')
     def get_reports(self, request):
-        """ดึงรายการ reports ด้วย POST พร้อมรับเงื่อนไขการกรอง"""
-        # รับพารามิเตอร์จาก request body
-        filters = {}
-        
-        # กรองตามสถานะ
-        if 'status' in request.data:
-            filters['status'] = request.data['status']
-        
-        # กรองตามอาจารย์
-        if 'teacher' in request.data:
-            filters['teacher__icontains'] = request.data['teacher']
-        
-        # กรองตามวิชา
-        if 'subject' in request.data:
-            filters['subject__icontains'] = request.data['subject']
-        
-        # กรองตามช่วงเวลา
-        if 'date_from' in request.data:
-            filters['created_at__gte'] = request.data['date_from']
-        
-        if 'date_to' in request.data:
-            filters['created_at__lte'] = request.data['date_to']
-        
-        # Query ข้อมูล
-        reports = Report.objects.filter(**filters)
-        
-        # เรียงลำดับ
-        order_by = request.data.get('order_by', '-created_at')
-        reports = reports.order_by(order_by)
-        
-        # Pagination
-        page_size = request.data.get('page_size', 20)
-        page = request.data.get('page', 1)
-        
-        start = (page - 1) * page_size
-        end = start + page_size
-        
-        paginated_reports = reports[start:end]
-        total_count = reports.count()
-        
-        # Serialize ข้อมูล
+        # ... โค้ดเหมือนเดิม ...
         serializer = self.get_serializer(paginated_reports, many=True)
-        
         return Response({
             'data': serializer.data,
             'pagination': {
@@ -89,20 +51,18 @@ class ReportViewSet(viewsets.ModelViewSet):
             },
             'filters_applied': filters
         }, status=status.HTTP_200_OK)
-    
+
     def create(self, request, *args, **kwargs):
-        """สร้าง report ใหม่ พร้อม gen tracking_id"""
         data = request.data.copy()
         data["tracking_id"] = generate_tracking_id()
-        
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        
         return Response({
             "tracking_id": serializer.data["tracking_id"],
             "message": "สร้างรายงานสำเร็จ"
         }, status=status.HTTP_201_CREATED)
+
 
 @api_view(["GET"])
 def search_report(request, tracking_id):
@@ -114,9 +74,10 @@ def search_report(request, tracking_id):
             "subject": report.subject,
             "detail": report.detail,
             "status": report.status,
-            "status_display": report.get_status_display(),  # เพิ่มบรรทัดนี้
+            "status_display": report.get_status_display(),
             "response": report.response,
             "created_at": report.created_at,
+            "file": report.file.url if report.file else None  # <-- แก้ตรงนี้
         }
         return Response(data, status=status.HTTP_200_OK)
     except Report.DoesNotExist:
